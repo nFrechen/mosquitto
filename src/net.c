@@ -243,7 +243,7 @@ struct mosquitto *net__socket_accept(struct mosquitto__listener_sock *listensock
 #endif
 
 	if(db.config->connection_messages == true){
-		log__printf(NULL, MOSQ_LOG_NOTICE, "New connection from %s:%d on port %d.",
+			log__printf(NULL, MOSQ_LOG_NOTICE, "{\"type\": \"New connection\", \"IP\": \"%s\", \"client_port\": %d, \"server_port\": %d}",
 				new_context->address, new_context->remote_port, new_context->listener->port);
 	}
 

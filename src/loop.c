@@ -333,7 +333,7 @@ void do_disconnect(struct mosquitto *context, int reason)
 						log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s closed its connection.", id);
 						break;
 					case MOSQ_ERR_AUTH:
-						log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s disconnected, not authorised.", id);
+						log__printf(NULL, MOSQ_LOG_NOTICE, "{\"type\": \"Client rejected\", \"clientID\":\"%s\", \"username\":\"%s\", \"reason\": \"not authorised\"}", id, context->username);
 						break;
 					case MOSQ_ERR_KEEPALIVE:
 						log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s has exceeded timeout, disconnecting.", id);
@@ -354,7 +354,7 @@ void do_disconnect(struct mosquitto *context, int reason)
 						log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s been disconnected by administrative action.", id);
 						break;
 					case MOSQ_ERR_ERRNO:
-						log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s disconnected: %s.", id, strerror(errno));
+						log__printf(NULL, MOSQ_LOG_NOTICE, "{\"type\": \"Client disconnected\", \"clientID\": \"%s\", \"reason\": \"%s\"}", id, strerror(errno));
 						break;
 					default:
 						log__printf(NULL, MOSQ_LOG_NOTICE, "Bad socket read/write on client %s: %s", id, mosquitto_strerror(reason));
@@ -364,7 +364,7 @@ void do_disconnect(struct mosquitto *context, int reason)
 				if(reason == MOSQ_ERR_ADMINISTRATIVE_ACTION){
 					log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s been disconnected by administrative action.", id);
 				}else{
-					log__printf(NULL, MOSQ_LOG_NOTICE, "Client %s disconnected.", id);
+					log__printf(NULL, MOSQ_LOG_NOTICE, "{\"type\": \"Client disconnected\", \"clientID\": \"%s\", \"username\":\"%s\"}", id, context->username);
 				}
 			}
 		}

@@ -247,10 +247,10 @@ int handle__publish(struct mosquitto *context)
 	/* Check for topic access */
 	rc = mosquitto_acl_check(context, msg->topic, msg->payloadlen, msg->payload, msg->qos, msg->retain, MOSQ_ACL_WRITE);
 	if(rc == MOSQ_ERR_ACL_DENIED){
-		log__printf(NULL, MOSQ_LOG_DEBUG,
-				"Denied PUBLISH from %s (d%d, q%d, r%d, m%d, '%s', ... (%ld bytes))",
+		log__printf(NULL, MOSQ_LOG_NOTICE,
+				"{\"type\": \"PUBLISH denied\", \"clientID\": \"%s\", \"dup\": \"%d\", \"qos\": %d, \"retain\": %d, \"messageID\": \"%d\", \"topic\": \"%s\", \"size_bytes\": \"%ld\", \"username\": \"%s\"}",
 				context->id, dup, msg->qos, msg->retain, msg->source_mid, msg->topic,
-				(long)msg->payloadlen);
+				(long)msg->payloadlen, context->username);
 		reason_code = MQTT_RC_NOT_AUTHORIZED;
 		goto process_bad_message;
 	}else if(rc != MOSQ_ERR_SUCCESS){
@@ -274,8 +274,8 @@ int handle__publish(struct mosquitto *context)
 	{
 		rc = plugin__handle_message(context, msg);
 		if(rc == MOSQ_ERR_ACL_DENIED){
-			log__printf(NULL, MOSQ_LOG_DEBUG,
-					"Denied PUBLISH from %s (d%d, q%d, r%d, m%d, '%s', ... (%ld bytes))",
+			log__printf(NULL, MOSQ_LOG_NOTICE,
+					"Denied PUBLISH (Plugin) from %s (d%d, q%d, r%d, m%d, '%s', ... (%ld bytes))",
 					context->id, dup, msg->qos, msg->retain, msg->source_mid, msg->topic,
 					(long)msg->payloadlen);
 

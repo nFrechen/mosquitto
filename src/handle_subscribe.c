@@ -167,7 +167,7 @@ int handle__subscribe(struct mosquitto *context)
 				sub = sub_mount;
 
 			}
-			log__printf(NULL, MOSQ_LOG_DEBUG, "\t%s (QoS %d)", sub, qos);
+			log__printf(NULL, MOSQ_LOG_DEBUG, "SUBSCRIBE requested for %s (QoS %d)", sub, qos);
 
 			allowed = true;
 			rc2 = mosquitto_acl_check(context, sub, 0, NULL, qos, false, MOSQ_ACL_SUBSCRIBE);
@@ -205,7 +205,9 @@ int handle__subscribe(struct mosquitto *context)
 					}
 				}
 
-				log__printf(NULL, MOSQ_LOG_SUBSCRIBE, "%s %d %s", context->id, qos, sub);
+				log__printf(NULL, MOSQ_LOG_SUBSCRIBE, "{\"type\": \"SUBSCRIBE\", \"action\": \"accept\", \"username\": \"%s\", \"clientID\": \"%s\", \"QoS\": %d, \"topic\": \"%s\"}", context->username, context->id, qos, sub);
+			}else{
+				log__printf(NULL, MOSQ_LOG_SUBSCRIBE, "{\"type\": \"SUBSCRIBE\", \"action\": \"reject\", \"username\":\"%s\", \"clientID\":\"%s\", \"QoS\": %d, \"topic\": \"%s\"}", context->username, context->id, qos, sub);
 			}
 			mosquitto__free(sub);
 
