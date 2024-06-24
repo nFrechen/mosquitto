@@ -6,7 +6,6 @@ LABEL maintainer="Roger Light <roger@atchoo.org>" \
 ENV LWS_VERSION=4.2.1 \
     CJSON_VERSION=1.7.14
 
-COPY mosq.tar.gz /tmp
 
 RUN set -x && \
     apk --no-cache add --virtual build-deps \
@@ -42,10 +41,11 @@ RUN set -x && \
     tar --strip=1 -xf /tmp/cjson.tar.gz -C /build/cjson && \
     rm /tmp/cjson.tar.gz && \
     cd /build/cjson && \
-    make -j "$(nproc)" libcjson.a && \
-    mkdir -p /build/mosq && \
-    tar --strip=1 -xf /tmp/mosq.tar.gz -C /build/mosq && \
-    rm /tmp/mosq.tar.gz && \
+    make -j "$(nproc)" libcjson.a
+
+COPY ./ /build/mosq/
+
+RUN ls -l /build/mosq && \
     make -C /build/mosq -j "$(nproc)" \
         CFLAGS="-Wall -O2 -I/build/lws/include -I/build" \
         LDFLAGS="-L/build/lws/lib -L/build/cjson" \
