@@ -171,10 +171,13 @@ int handle__subscribe(struct mosquitto *context)
 
 			allowed = true;
 			rc2 = mosquitto_acl_check(context, sub, 0, NULL, qos, false, MOSQ_ACL_SUBSCRIBE);
+			
 			switch(rc2){
 				case MOSQ_ERR_SUCCESS:
+					//log__printf(NULL, MOSQ_LOG_DEBUG, "SUBSCRIBE acl check success");
 					break;
 				case MOSQ_ERR_ACL_DENIED:
+					//log__printf(NULL, MOSQ_LOG_DEBUG, "SUBSCRIBE acl check denied");
 					allowed = false;
 					if(context->protocol == mosq_p_mqtt5){
 						qos = MQTT_RC_NOT_AUTHORIZED;
@@ -183,6 +186,7 @@ int handle__subscribe(struct mosquitto *context)
 					}
 					break;
 				default:
+					//log__printf(NULL, MOSQ_LOG_DEBUG, "SUBSCRIBE acl check default");
 					mosquitto__free(sub);
 					return rc2;
 			}

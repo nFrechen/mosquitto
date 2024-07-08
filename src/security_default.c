@@ -380,7 +380,8 @@ static int mosquitto_acl_check_default(int event, void *event_data, void *userda
 	UNUSED(userdata);
 
 	if(ed->client->bridge) return MOSQ_ERR_SUCCESS;
-	if(ed->access == MOSQ_ACL_SUBSCRIBE || ed->access == MOSQ_ACL_UNSUBSCRIBE) return MOSQ_ERR_SUCCESS; /* FIXME - implement ACL subscription strings. */
+	//log__printf(NULL, MOSQ_LOG_NOTICE, "========= mosquitto_acl_check_default: %d for %s", ed->access, ed->client->username);
+	//if(ed->access == MOSQ_ACL_SUBSCRIBE || ed->access == MOSQ_ACL_UNSUBSCRIBE) return MOSQ_ERR_SUCCESS; /* FIXME - implement ACL subscription strings. */
 
 	if(db.config->per_listener_settings){
 		if(!ed->client->listener) return MOSQ_ERR_ACL_DENIED;
@@ -402,6 +403,7 @@ static int mosquitto_acl_check_default(int event, void *event_data, void *userda
 
 	/* Loop through all ACLs for this client. ACL denials are iterated over first. */
 	while(acl_root){
+		//log__printf(NULL, MOSQ_LOG_NOTICE, "========= searching access rights %s ====", acl_root->topic);
 		/* Loop through the topic looking for matches to this ACL. */
 
 		/* If subscription starts with $, acl_root->topic must also start with $. */
@@ -413,10 +415,19 @@ static int mosquitto_acl_check_default(int event, void *event_data, void *userda
 		if(result){
 			if(acl_root->access == MOSQ_ACL_NONE){
 				/* Access was explicitly denied for this topic. */
+				//log__printf(NULL, MOSQ_LOG_NOTICE, "========= mosquitto_acl_check_default access explicitly denied %s ====", acl_root->topic);
 				return MOSQ_ERR_ACL_DENIED;
+			}
+			if(ed->access == MOSQ_ACL_SUBSCRIBE || ed->access == MOSQ_ACL_UNSUBSCRIBE){
+				if(MOSQ_ACL_READ & acl_root->access){
+					/* subscribe/unsubscribe allowed because read is allowed */
+					//log__printf(NULL, MOSQ_LOG_NOTICE, "========= subscribe/unsubscribe allowed because read is allowed %s ====", acl_root->topic);
+					return MOSQ_ERR_SUCCESS;
+				}
 			}
 			if(ed->access & acl_root->access){
 				/* And access is allowed. */
+				//log__printf(NULL, MOSQ_LOG_NOTICE, "========= mosquitto_acl_check_default access allowed %s ====", acl_root->topic);
 				return MOSQ_ERR_SUCCESS;
 			}
 		}
@@ -490,17 +501,27 @@ static int mosquitto_acl_check_default(int event, void *event_data, void *userda
 		if(result){
 			if(acl_root->access == MOSQ_ACL_NONE){
 				/* Access was explicitly denied for this topic pattern. */
+				//log__printf(NULL, MOSQ_LOG_NOTICE, "========= mosquitto_acl_check_default pattern access denied %s ====", ed->topic);
 				return MOSQ_ERR_ACL_DENIED;
+			}
+			if(ed->access == MOSQ_ACL_SUBSCRIBE || ed->access == MOSQ_ACL_UNSUBSCRIBE){
+				if(MOSQ_ACL_READ & acl_root->access){
+					/* subscribe/unsubscribe allowed because read is allowed */
+					//log__printf(NULL, MOSQ_LOG_NOTICE, "========= subscribe/unsubscribe allowed because read is allowed %s ====", acl_root->topic);
+					return MOSQ_ERR_SUCCESS;
+				}
 			}
 			if(ed->access & acl_root->access){
 				/* And access is allowed. */
+				//log__printf(NULL, MOSQ_LOG_NOTICE, "========= mosquitto_acl_check_default pattern access allowed %s ====", ed->topic);
 				return MOSQ_ERR_SUCCESS;
 			}
 		}
 
 		acl_root = acl_root->next;
 	}
-
+	
+	//log__printf(NULL, MOSQ_LOG_NOTICE, "========= mosquitto_acl_check_default access denied (no right found) %s ====", ed->topic);
 	return MOSQ_ERR_ACL_DENIED;
 }
 

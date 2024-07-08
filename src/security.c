@@ -737,6 +737,7 @@ int mosquitto_acl_check(struct mosquitto *context, const char *topic, uint32_t p
 
 	for(i=0; i<opts->auth_plugin_config_count; i++){
 		if(opts->auth_plugin_configs[i].plugin.version < 5){
+			//log__printf(NULL, MOSQ_LOG_DEBUG, "auth_plugin for_loop");
 			rc = acl__check_single(&opts->auth_plugin_configs[i], context, &msg, access);
 			if(rc != MOSQ_ERR_PLUGIN_DEFER){
 				return rc;
